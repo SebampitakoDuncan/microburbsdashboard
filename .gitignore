@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+*.log
+analysis/__pycache__/
+static/__pycache__/
+node_modules/
+*.sqlite
+*.db
+dist/
+build/
+.vercel/

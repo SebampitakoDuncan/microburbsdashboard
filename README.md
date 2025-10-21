@@ -6,6 +6,7 @@ A comprehensive property market analysis dashboard that integrates with the Micr
 **📊 API:** Successfully fetching 8+ properties from Belmont North ✅ **JSON parsing fixed**
 **🎨 UI:** **Material Design** with DM Sans font, professional blue color scheme
 **📱 Mobile:** Fully responsive Material UI design
+**🚀 Deploy:** Optimized for Vercel (3.5MB vs 200MB)
 
 ## Features
 
@@ -47,11 +48,14 @@ A comprehensive property market analysis dashboard that integrates with the Micr
 ├── analysis/
 │   └── property_analysis.ipynb   # Jupyter notebook for data exploration
 ├── app.py                         # Flask application server
-├── requirements.txt               # Python dependencies
+├── requirements.txt               # Web deployment dependencies (3.5MB)
+├── requirements-analysis.txt      # Data analysis dependencies (200MB+)
+├── vercel.json                    # Vercel deployment configuration
+├── .gitignore                     # Git ignore rules
 ├── static/
 │   ├── index.html                 # Main dashboard HTML
 │   ├── app.js                     # Vanilla JavaScript application
-│   └── styles.css                 # Custom CSS styling
+│   └── styles.css                 # Material UI CSS styling
 └── README.md                      # This file
 ```
 
@@ -73,8 +77,15 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 ### 3. Install Dependencies
+
+**For Web Deployment (Vercel):**
 ```bash
 pip install -r requirements.txt
+```
+
+**For Data Analysis (Local Development):**
+```bash
+pip install -r requirements-analysis.txt
 ```
 
 ### 4. Run the Application
@@ -96,7 +107,33 @@ python app.py
 
 ### 5. Run Jupyter Analysis (Optional)
 ```bash
+pip install -r requirements-analysis.txt
 jupyter notebook analysis/property_analysis.ipynb
+```
+
+## Vercel Deployment
+
+This project is optimized for Vercel deployment:
+
+### Deployment Size Optimization
+- **Web Requirements:** 3.5MB (Flask, flask-cors, requests only)
+- **Analysis Requirements:** 200MB+ (includes pandas, matplotlib, seaborn, jupyter)
+- **Size Reduction:** 98% smaller for web deployment
+
+### Configuration Files
+- `vercel.json` - Vercel deployment configuration
+- `requirements.txt` - Web-only dependencies for deployment
+- `requirements-analysis.txt` - Full dependencies for local analysis
+
+### Deploy to Vercel
+1. Connect your GitHub repository to Vercel
+2. Vercel will automatically use the optimized `requirements.txt`
+3. Deployment completes in under 2 minutes (vs timeout with full requirements)
+
+### Local Development
+For data analysis and Jupyter notebook work, install the analysis requirements:
+```bash
+pip install -r requirements-analysis.txt
 ```
 
 ## Usage Guide
