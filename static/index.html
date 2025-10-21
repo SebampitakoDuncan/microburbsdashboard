@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Dashboard - Belmont North</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-content">
+                <h1><i class="fas fa-home"></i> Property Dashboard</h1>
+                <p>Real-time property market insights powered by AI</p>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h2>Search Properties</h2>
+            <div class="quick-examples" style="margin-bottom: 20px;">
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 8px;">Quick examples:</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="quick-suburb" data-suburb="Belmont North" style="background: var(--primary-color); color: white; border: none; padding: 6px 12px; border-radius: 16px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease;">Belmont North</button>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); padding: 6px 8px; background: #f8f9fa; border-radius: 16px; border: 1px solid var(--border);">Demo only</span>
+                </div>
+            </div>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="suburb">Suburb:</label>
+                    <input type="text" id="suburb" value="Belmont North" placeholder="Enter suburb name (demo: Belmont North only)">
+                </div>
+                <div class="form-group">
+                    <label for="property-type">Property Type:</label>
+                    <select id="property-type">
+                        <option value="house">House</option>
+                        <option value="unit">Unit</option>
+                        <option value="townhouse">Townhouse</option>
+                    </select>
+                </div>
+                <button id="search-btn" class="search-btn">
+                    <i class="fas fa-search"></i> Search Properties
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading-spinner hidden">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message hidden">
+            <p id="error-text"></p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div id="stats-section" class="stats-section hidden">
+            <h2>Market Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-properties">-</div>
+                    <div class="stat-label">Total Properties</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-price">-</div>
+                    <div class="stat-label">Average Price</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="median-price">-</div>
+                    <div class="stat-label">Median Price</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="price-range">-</div>
+                    <div class="stat-label">Price Range</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-land-size">-</div>
+                    <div class="stat-label">Avg Land Size</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-price-per-sqm">-</div>
+                    <div class="stat-label">Avg Price/m²</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div id="charts-section" class="charts-section hidden">
+            <h2>Market Analysis</h2>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Price Distribution</h3>
+                    <canvas id="price-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Bedrooms vs Average Price</h3>
+                    <canvas id="bedrooms-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Land Size vs Price</h3>
+                    <canvas id="land-size-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Price per m² Distribution</h3>
+                    <canvas id="price-per-sqm-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Table -->
+        <div id="properties-section" class="properties-section hidden">
+            <div class="table-header">
+                <i class="fas fa-list"></i> Property Listings
+            </div>
+            <div class="table-controls">
+                <div class="table-info">
+                    <span id="table-count">0 properties</span>
+                </div>
+                <div class="table-actions">
+                <button id="expand-all" class="btn-secondary">Expand All</button>
+                <button id="collapse-all" class="btn-secondary">Collapse All</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-sort="address">Address <i class="fas fa-sort"></i></th>
+                            <th data-sort="price">Price <i class="fas fa-sort"></i></th>
+                            <th data-sort="bedrooms">Beds <i class="fas fa-sort"></i></th>
+                            <th data-sort="bathrooms">Baths <i class="fas fa-sort"></i></th>
+                            <th data-sort="land_size">Land Size <i class="fas fa-sort"></i></th>
+                            <th data-sort="price_per_sqm">Price/m² <i class="fas fa-sort"></i></th>
+                            <th data-sort="listing_date">Listed <i class="fas fa-sort"></i></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="properties-tbody">
+                        <!-- Properties will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Detail Modal -->
+    <div id="property-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Property Details</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-content">
+                    <!-- Property details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
