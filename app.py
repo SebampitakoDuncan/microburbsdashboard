@@ -39,10 +39,27 @@ def find_problematic_field(data):
         return f"Error analyzing data: {str(e)}"
     return None
 
+def inspect_response_characters(response_text, error_pos):
+    """
+    Inspect characters around the error position to identify problematic characters
+    """
+    start = max(0, error_pos - 50)
+    end = min(len(response_text), error_pos + 50)
+
+    problematic_chars = []
+    for i in range(start, end):
+        char = response_text[i]
+        # Check for control characters (except \t, \n, \r which are valid in JSON strings)
+        if ord(char) < 32 and char not in '\t\n\r':
+            problematic_chars.append(f"pos {i}: control char {ord(char)} ({repr(char)})")
+
+    return f"Characters around position {error_pos}: {repr(response_text[start:end])}\nProblematic characters: {problematic_chars[:10]}"
+
 def clean_nan_values(data):
     """
     Recursively clean NaN values from API response
     Convert NaN to None (null in JSON) which is JSON-compliant
+    Also remove problematic Unicode characters and control characters
     """
     try:
         if isinstance(data, dict):
@@ -56,17 +73,25 @@ def clean_nan_values(data):
                         cleaned[key] = None
                     else:
                         # Clean potentially problematic characters in strings
-                        try:
-                            # Remove or replace problematic Unicode characters
-                            cleaned_value = value.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
-                            # Ensure the string can be properly encoded in JSON
-                            cleaned_value.encode('utf-8')
-                            cleaned[key] = cleaned_value
-                        except (UnicodeEncodeError, UnicodeDecodeError) as e:
-                            logger.warning(f"Cleaning problematic characters in string field '{key}': {value[:50]}... Error: {str(e)}")
-                            # Replace problematic characters with safe alternatives
-                            cleaned_value = value.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
-                            cleaned[key] = cleaned_value
+                        cleaned_value = value
+                        # Replace common problematic Unicode characters
+                        cleaned_value = cleaned_value.replace('\u00a0', ' ').replace('\u00b2', ' sqm')
+                        cleaned_value = cleaned_value.replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                        # Remove control characters (except \t, \n, \r which are valid in JSON strings)
+                        cleaned_value = ''.join(char for char in cleaned_value if ord(char) >= 32 or char in '\t\n\r')
+                        # Remove any remaining problematic characters
+                        cleaned_value = cleaned_value.replace('\x00', '').replace('\x01', '').replace('\x02', '')
+                        cleaned_value = cleaned_value.replace('\x03', '').replace('\x04', '').replace('\x05', '')
+                        cleaned_value = cleaned_value.replace('\x06', '').replace('\x07', '').replace('\x08', '')
+                        cleaned_value = cleaned_value.replace('\x0b', '').replace('\x0c', '').replace('\x0e', '')
+                        cleaned_value = cleaned_value.replace('\x0f', '').replace('\x10', '').replace('\x11', '')
+                        cleaned_value = cleaned_value.replace('\x12', '').replace('\x13', '').replace('\x14', '')
+                        cleaned_value = cleaned_value.replace('\x15', '').replace('\x16', '').replace('\x17', '')
+                        cleaned_value = cleaned_value.replace('\x18', '').replace('\x19', '').replace('\x1a', '')
+                        cleaned_value = cleaned_value.replace('\x1b', '').replace('\x1c', '').replace('\x1d', '')
+                        cleaned_value = cleaned_value.replace('\x1e', '').replace('\x1f', '')
+
+                        cleaned[key] = cleaned_value
                 else:
                     cleaned[key] = clean_nan_values(value)
             return cleaned
@@ -93,17 +118,24 @@ def clean_nan_values(data):
                     return None
                 else:
                     # Clean potentially problematic characters in strings
-                    try:
-                        # Remove or replace problematic Unicode characters
-                        cleaned_value = data.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
-                        # Ensure the string can be properly encoded in JSON
-                        cleaned_value.encode('utf-8')
-                        return cleaned_value
-                    except (UnicodeEncodeError, UnicodeDecodeError) as e:
-                        logger.warning(f"Cleaning problematic characters in string: {data[:50]}... Error: {str(e)}")
-                        # Replace problematic characters with safe alternatives
-                        cleaned_value = data.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
-                        return cleaned_value
+                    cleaned_value = data
+                    # Replace common problematic Unicode characters
+                    cleaned_value = cleaned_value.replace('\u00a0', ' ').replace('\u00b2', ' sqm')
+                    cleaned_value = cleaned_value.replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                    # Remove control characters (except \t, \n, \r which are valid in JSON strings)
+                    cleaned_value = ''.join(char for char in cleaned_value if ord(char) >= 32 or char in '\t\n\r')
+                    # Remove any remaining problematic characters
+                    cleaned_value = cleaned_value.replace('\x00', '').replace('\x01', '').replace('\x02', '')
+                    cleaned_value = cleaned_value.replace('\x03', '').replace('\x04', '').replace('\x05', '')
+                    cleaned_value = cleaned_value.replace('\x06', '').replace('\x07', '').replace('\x08', '')
+                    cleaned_value = cleaned_value.replace('\x0b', '').replace('\x0c', '').replace('\x0e', '')
+                    cleaned_value = cleaned_value.replace('\x0f', '').replace('\x10', '').replace('\x11', '')
+                    cleaned_value = cleaned_value.replace('\x12', '').replace('\x13', '').replace('\x14', '')
+                    cleaned_value = cleaned_value.replace('\x15', '').replace('\x16', '').replace('\x17', '')
+                    cleaned_value = cleaned_value.replace('\x18', '').replace('\x19', '').replace('\x1a', '')
+                    cleaned_value = cleaned_value.replace('\x1b', '').replace('\x1c', '').replace('\x1d', '')
+                    cleaned_value = cleaned_value.replace('\x1e', '').replace('\x1f', '')
+                    return cleaned_value
             else:
                 return data
     except Exception as e:
@@ -174,7 +206,7 @@ def get_properties():
                     json_str = json.dumps(cleaned_data, ensure_ascii=False)
                     logger.info(f"JSON validation successful: {len(json_str)} characters")
                     return jsonify(cleaned_data)
-                except json.JSONDecodeError as e:
+                except Exception as e:
                     logger.error(f"JSON validation failed: {str(e)}")
                     logger.error(f"Cleaned data preview: {str(cleaned_data)[:500]}")
 
@@ -182,15 +214,26 @@ def get_properties():
                     try:
                         problematic_field = find_problematic_field(cleaned_data)
                         logger.error(f"Problematic field: {problematic_field}")
-                    except:
-                        logger.error("Could not identify problematic field")
+                    except Exception as field_error:
+                        logger.error(f"Could not identify problematic field: {str(field_error)}")
+
+                    # If this is a JSON parsing error from the frontend, inspect the original response
+                    error_msg = str(e)
+                    if "column 16168" in error_msg or "char 16167" in error_msg:
+                        logger.error("Frontend reported error at character 16167, inspecting original response...")
+                        try:
+                            inspection = inspect_response_characters(response.text, 16167)
+                            logger.error(f"Response inspection: {inspection}")
+                        except Exception as inspect_error:
+                            logger.error(f"Could not inspect response: {str(inspect_error)}")
 
                     # Return error response with debugging info
                     return jsonify({
                         'error': f'Invalid JSON after cleaning: {str(e)}',
                         'data_size': len(str(cleaned_data)),
                         'data_preview': str(cleaned_data)[:1000] if str(cleaned_data) else 'No data',
-                        'original_response_size': len(response.text)
+                        'original_response_size': len(response.text),
+                        'error_type': type(e).__name__
                     }), 500
             except json.JSONDecodeError as e:
                 logger.error(f"Original response is not valid JSON: {str(e)}")

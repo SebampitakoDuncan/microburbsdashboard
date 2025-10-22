@@ -123,7 +123,19 @@ class PropertyDashboard {
 
         } catch (error) {
             console.error('Error fetching properties:', error);
-            this.showError(`Failed to load properties: ${error.message}`);
+
+            // Check if it's a JSON parsing error
+            if (error.message.includes('Expecting value') || error.message.includes('JSON')) {
+                console.error('JSON parsing error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    suburb: suburb,
+                    propertyType: propertyType
+                });
+                this.showError(`Failed to load properties: Invalid data format. Please try again.`);
+            } else {
+                this.showError(`Failed to load properties: ${error.message}`);
+            }
         } finally {
             this.showLoading(false);
         }
