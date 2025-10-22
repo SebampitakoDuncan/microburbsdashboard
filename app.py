@@ -189,12 +189,15 @@ def get_properties():
                 logger.info(f"Original data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
                 logger.info(f"Results count in original: {len(data.get('results', [])) if isinstance(data, dict) else 'N/A'}")
 
-                # Use safe JSON response which handles all validation and cleaning
-                cleaned_data = validate_and_clean_json_data(data)
-                logger.info(f"Cleaned data keys: {list(cleaned_data.keys()) if isinstance(cleaned_data, dict) else 'Not a dict'}")
-                logger.info(f"Results count in cleaned: {len(cleaned_data.get('results', [])) if isinstance(cleaned_data, dict) else 'N/A'}")
+                # TEMPORARILY BYPASS CLEANING TO TEST IF IT'S THE ISSUE
+                # cleaned_data = validate_and_clean_json_data(data)
+                # logger.info(f"Cleaned data keys: {list(cleaned_data.keys()) if isinstance(cleaned_data, dict) else 'Not a dict'}")
+                # logger.info(f"Results count in cleaned: {len(cleaned_data.get('results', [])) if isinstance(cleaned_data, dict) else 'N/A'}")
+                # return safe_json_response(cleaned_data)
 
-                return safe_json_response(cleaned_data)
+                # Return raw data temporarily to test
+                logger.info("TEMPORARILY RETURNING RAW DATA TO TEST")
+                return safe_json_response(data)
             except Exception as e:
                 logger.error(f"Unexpected error processing API response: {str(e)}")
                 logger.error(f"Response status: {response.status_code}")
