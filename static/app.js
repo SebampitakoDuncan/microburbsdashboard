@@ -93,9 +93,15 @@ class PropertyDashboard {
             }
 
             const data = await response.json();
+            console.log('Raw API response:', data);
+            console.log('Response data keys:', Object.keys(data));
+            console.log('Results in response:', data.results);
+            console.log('Results length:', data.results ? data.results.length : 'undefined');
+
             this.properties = data.results || [];
 
             if (this.properties.length === 0) {
+                console.log('No properties found - showing error');
                 this.showError(`No properties found for "${suburb}". Try a different suburb or property type.`);
                 return;
             }
