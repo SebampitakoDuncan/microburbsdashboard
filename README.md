@@ -130,6 +130,18 @@ This project is optimized for Vercel deployment:
 2. Vercel will automatically use the optimized `requirements.txt`
 3. Deployment completes in under 2 minutes (vs timeout with full requirements)
 
+### Troubleshooting Vercel Deployment
+
+**If you get JSON parsing errors:**
+1. Test the simple endpoint: `/api/properties-test` (returns mock data)
+2. Check Vercel function logs for detailed error messages
+3. Ensure the `clean_nan_values` function isn't causing issues
+
+**Test Endpoints:**
+- `/health` - Health check
+- `/test` - Basic Flask test
+- `/api/properties-test` - Mock property data (no external API calls)
+
 ### Local Development
 For data analysis and Jupyter notebook work, install the analysis requirements:
 ```bash
