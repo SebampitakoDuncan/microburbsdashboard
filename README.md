@@ -1,22 +1,22 @@
-# Property Dashboard ✅ **LIVE & WORKING**
+# Property Dashboard 
 
 A comprehensive property market analysis dashboard that integrates with the Microburbs API to display real-time property data with interactive visualizations and insights.
 
-**🌐 Live at:** http://localhost:5001
-**📊 API:** Successfully fetching 8+ properties from Belmont North ✅ **JSON parsing fixed**
-**🎨 UI:** **Material Design** with DM Sans font, professional blue color scheme
-**📱 Mobile:** Fully responsive Material UI design
-**🚀 Deploy:** Optimized for Vercel (3.5MB vs 200MB)
+**API:** Successfully fetching 8+ properties from Belmont North
+
+<img width="2940" height="5157" alt="CleanShot 2025-10-22 at 11 05 03@2x" src="https://github.com/user-attachments/assets/71f104e9-9c98-4181-a1be-11952c0e6c74" />
+
+
 
 ## Features
 
-### 📊 **Data Analysis & Insights**
+###  **Data Analysis & Insights**
 - **Jupyter Notebook Analysis**: Comprehensive data exploration using Pandas
 - **Market Statistics**: Average price, median price, price ranges, land size analysis
 - **Price per Square Meter**: Calculated metrics for property value assessment
 - **Correlation Analysis**: Relationships between property features and pricing
 
-### 🎯 **Interactive Dashboard**
+###  **Interactive Dashboard**
 - **Real-time Search**: Search by suburb and property type
 - **Statistics Cards**: Key market metrics at a glance
 - **Interactive Charts**: 
@@ -27,7 +27,7 @@ A comprehensive property market analysis dashboard that integrates with the Micr
 - **Sortable Property Table**: Click column headers to sort by any field
 - **Property Details Modal**: Expandable property information with full descriptions
 
-### 🎨 **User Experience**
+### **User Experience**
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Loading States**: Visual feedback during data fetching
 - **Error Handling**: User-friendly error messages
@@ -93,18 +93,6 @@ pip install -r requirements-analysis.txt
 python app.py
 ```
 
-**✅ Dashboard is now live at:** **http://localhost:5001**
-
-**What you'll see:**
-- **Material Design** header with subtle texture overlay
-- **DM Sans typography** for professional readability
-- **Material UI color scheme** (blue primary, clean grays)
-- **Quick suburb buttons** for easy demo testing
-- **Interactive charts** with Chart.js (fixed canvas reuse)
-- **Sortable property table** with Material styling
-- **Professional search interface** with validation
-- **Fully responsive** design optimized for all devices
-
 ### 5. Run Jupyter Analysis (Optional)
 ```bash
 pip install -r requirements-analysis.txt
@@ -152,12 +140,12 @@ pip install -r requirements-analysis.txt
 
 ### Dashboard Features
 
-#### 🔍 **Search Properties**
+#### **Search Properties**
 1. Enter a suburb name (e.g., "Belmont North")
 2. Select property type (House, Unit, Townhouse)
 3. Click "Search Properties" to fetch data
 
-#### 📈 **Market Overview**
+#### **Market Overview**
 The dashboard displays key statistics:
 - **Total Properties**: Number of current listings
 - **Average Price**: Mean property price
@@ -166,13 +154,13 @@ The dashboard displays key statistics:
 - **Average Land Size**: Mean land area in square meters
 - **Average Price/m²**: Price per square meter metric
 
-#### 📊 **Interactive Charts**
+####**Interactive Charts**
 - **Price Distribution**: Histogram showing price frequency
 - **Bedrooms vs Price**: Bar chart of average price by bedroom count
 - **Land Size vs Price**: Scatter plot showing correlation
 - **Price per m²**: Distribution of price per square meter
 
-#### 📋 **Property Table**
+#### **Property Table**
 - Sortable columns: Address, Price, Beds, Baths, Land Size, Price/m², Listed Date
 - Click any column header to sort ascending/descending
 - "View Details" button opens property information modal
@@ -259,9 +247,9 @@ Based on the analysis of Belmont North property data:
    ```
 
 3. **JSON Parsing Errors**
-   - ✅ Fixed: NaN values from API are automatically converted to null
-   - ✅ Fixed: Chart.js canvas reuse errors resolved
-   - ✅ Fixed: Search functionality works for all supported suburbs
+   -  Fixed: NaN values from API are automatically converted to null
+   -  Fixed: Chart.js canvas reuse errors resolved
+   -  Fixed: Search functionality works for all supported suburbs
 
 4. **CORS Issues**
    - Flask-CORS is configured for development
@@ -285,4 +273,4 @@ This project is for demonstration purposes. Please respect the Microburbs API te
 
 ---
 
-**Built with ❤️ using Python, Flask, and Vanilla JavaScript**
+**Built with  using Python, Flask, and Vanilla JavaScript**
