@@ -13,6 +13,36 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
 
+def sanitize_json_text(json_text):
+    """
+    Sanitize raw JSON text to handle encoding issues and invalid characters
+    that might work locally but fail in serverless environments
+    """
+    if not isinstance(json_text, str):
+        json_text = str(json_text)
+
+    # Remove BOM if present (Byte Order Mark)
+    json_text = json_text.lstrip('\ufeff')
+
+    # Replace problematic Unicode characters that cause issues
+    replacements = {
+        '\u00a0': ' ',  # Non-breaking space
+        '\u00b2': '²',  # Superscript 2
+        '\u2013': '-',  # En dash
+        '\u2019': "'",  # Right single quotation mark
+        '\u2022': '•',  # Bullet
+        '\u201c': '"',  # Left double quotation mark
+        '\u201d': '"',  # Right double quotation mark
+    }
+
+    for old, new in replacements.items():
+        json_text = json_text.replace(old, new)
+
+    # Remove control characters except valid whitespace
+    json_text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', json_text)
+
+    return json_text
+
 def is_valid_json_string(s):
     """
     Check if a string can be safely included in JSON
@@ -176,20 +206,36 @@ def get_properties():
         # Check if request was successful
         if response.status_code == 200:
             try:
-                # Parse the JSON response with proper error handling
+                # First sanitize the raw response text to handle encoding issues
+                raw_text = response.text
+                logger.info(f"Raw response length: {len(raw_text)} characters")
+
+                # Sanitize the raw text before JSON parsing
+                sanitized_text = sanitize_json_text(raw_text)
+                logger.info(f"Sanitized response length: {len(sanitized_text)} characters")
+
+                # Parse the sanitized JSON response
                 try:
-                    data = response.json()
+                    data = json.loads(sanitized_text)
                 except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse API response as JSON: {str(e)}")
+                    logger.error(f"Failed to parse sanitized API response as JSON: {str(e)}")
+                    logger.error(f"Error position: {e.pos if hasattr(e, 'pos') else 'unknown'}")
                     logger.error(f"Response status: {response.status_code}")
                     logger.error(f"Response headers: {dict(response.headers)}")
-                    logger.error(f"Response text preview: {response.text[:500]}")
-                    return safe_json_response({
-                        'error': 'API returned invalid JSON',
+
+                    # Show context around error position
+                    error_pos = getattr(e, 'pos', len(sanitized_text))
+                    start = max(0, error_pos - 100)
+                    end = min(len(sanitized_text), error_pos + 100)
+                    logger.error(f"Text around error: {repr(sanitized_text[start:end])}")
+
+                    return jsonify({
+                        'error': 'API returned invalid JSON after sanitization',
                         'message': str(e),
+                        'error_pos': error_pos,
                         'status_code': response.status_code,
-                        'response_preview': response.text[:200] if response.text else 'No response text'
-                    })
+                        'text_preview': sanitized_text[max(0, error_pos-50):error_pos+50]
+                    }), 500
 
                 logger.info(f"Successfully fetched {len(data.get('results', []))} properties")
                 logger.info(f"Original data size: {len(str(data))} characters")
