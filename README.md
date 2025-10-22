@@ -2,7 +2,7 @@
 
 A comprehensive property market analysis dashboard that integrates with the Microburbs API to display real-time property data with interactive visualizations and insights.
 
-**API:** Successfully fetching 8+ properties from Belmont North  **JSON parsing fixed**
+**API:** Successfully fetching 8+ properties from Belmont North
 <img width="2940" height="5157" alt="CleanShot 2025-10-22 at 11 05 03@2x" src="https://github.com/user-attachments/assets/71f104e9-9c98-4181-a1be-11952c0e6c74" />
 
 
