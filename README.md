@@ -1,12 +1,11 @@
-# Property Dashboard ✅ **LIVE & WORKING**
+# Property Dashboard 
 
 A comprehensive property market analysis dashboard that integrates with the Microburbs API to display real-time property data with interactive visualizations and insights.
 
-**🌐 Live at:** http://localhost:5001
-**📊 API:** Successfully fetching 8+ properties from Belmont North ✅ **JSON parsing fixed**
-**🎨 UI:** **Material Design** with DM Sans font, professional blue color scheme
-**📱 Mobile:** Fully responsive Material UI design
-**🚀 Deploy:** Optimized for Vercel (3.5MB vs 200MB)
+**API:** Successfully fetching 8+ properties from Belmont North ✅ **JSON parsing fixed**
+<img width="2940" height="5157" alt="CleanShot 2025-10-22 at 11 05 03@2x" src="https://github.com/user-attachments/assets/71f104e9-9c98-4181-a1be-11952c0e6c74" />
+
+
 
 ## Features
 
@@ -247,9 +246,9 @@ Based on the analysis of Belmont North property data:
    ```
 
 3. **JSON Parsing Errors**
-   - ✅ Fixed: NaN values from API are automatically converted to null
-   - ✅ Fixed: Chart.js canvas reuse errors resolved
-   - ✅ Fixed: Search functionality works for all supported suburbs
+   -  Fixed: NaN values from API are automatically converted to null
+   -  Fixed: Chart.js canvas reuse errors resolved
+   -  Fixed: Search functionality works for all supported suburbs
 
 4. **CORS Issues**
    - Flask-CORS is configured for development
@@ -273,4 +272,4 @@ This project is for demonstration purposes. Please respect the Microburbs API te
 
 ---
 
-**Built with ❤️ using Python, Flask, and Vanilla JavaScript**
+**Built with  using Python, Flask, and Vanilla JavaScript**
