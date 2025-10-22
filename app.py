@@ -93,20 +93,27 @@ def safe_json_response(data):
     """
     try:
         # First validate and clean the data
+        logger.info(f"safe_json_response: Starting with data type {type(data)}")
         cleaned_data = validate_and_clean_json_data(data)
+        logger.info(f"safe_json_response: Cleaned data type {type(cleaned_data)}")
 
         # Try to serialize with ensure_ascii=False first (preserves Unicode)
         try:
+            logger.info("safe_json_response: Trying Unicode serialization")
             json_str = json.dumps(cleaned_data, ensure_ascii=False, separators=(',', ':'))
+            logger.info(f"safe_json_response: Unicode serialization successful, length: {len(json_str)}")
             return Response(json_str, mimetype='application/json')
         except (TypeError, ValueError, UnicodeEncodeError) as e:
             logger.warning(f"Unicode JSON failed, trying ASCII fallback: {str(e)}")
             # Fallback to ASCII encoding if Unicode fails
             json_str = json.dumps(cleaned_data, ensure_ascii=True, separators=(',', ':'))
+            logger.info(f"safe_json_response: ASCII serialization successful, length: {len(json_str)}")
             return Response(json_str, mimetype='application/json')
 
     except Exception as e:
         logger.error(f"Failed to create JSON response: {str(e)}")
+        logger.error(f"Original data preview: {str(data)[:500]}")
+        # Use simple response for error to avoid recursion
         error_response = {
             'error': 'Data processing failed',
             'message': str(e),
@@ -201,28 +208,29 @@ def get_properties():
             except Exception as e:
                 logger.error(f"Unexpected error processing API response: {str(e)}")
                 logger.error(f"Response status: {response.status_code}")
-                return safe_json_response({
+                # Use simple jsonify for error responses to avoid JSON serialization issues
+                return jsonify({
                     'error': 'Unexpected error processing response',
                     'message': str(e),
                     'status_code': response.status_code
-                })
+                }), 500
         else:
             logger.error(f"API request failed with status {response.status_code}")
             logger.error(f"API response: {response.text}")
-            return safe_json_response({
+            return jsonify({
                 'error': f'API request failed with status {response.status_code}',
                 'details': response.text[:500] if response.text else 'No response text'
-            })
+            }), response.status_code
 
     except requests.exceptions.Timeout:
         logger.error("API request timed out")
-        return safe_json_response({'error': 'Request timed out'}), 504
+        return jsonify({'error': 'Request timed out'}), 504
     except requests.exceptions.RequestException as e:
         logger.error(f"Request error: {str(e)}")
-        return safe_json_response({'error': f'Request failed: {str(e)}'}), 500
+        return jsonify({'error': f'Request failed: {str(e)}'}), 500
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
-        return safe_json_response({'error': f'Internal server error: {str(e)}'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @app.route('/health')
 def health_check():
