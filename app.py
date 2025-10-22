@@ -12,6 +12,33 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
 
+def find_problematic_field(data):
+    """
+    Try to identify which field contains invalid JSON
+    """
+    try:
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    find_problematic_field(value)
+                elif isinstance(value, list):
+                    for item in value:
+                        find_problematic_field(item)
+                elif isinstance(value, str):
+                    # Try to encode the string as JSON
+                    try:
+                        json.dumps(value)
+                    except:
+                        return f"String field '{key}': {repr(value[:100])}"
+        elif isinstance(data, list):
+            for item in data:
+                result = find_problematic_field(item)
+                if result:
+                    return result
+    except Exception as e:
+        return f"Error analyzing data: {str(e)}"
+    return None
+
 def clean_nan_values(data):
     """
     Recursively clean NaN values from API response
@@ -21,51 +48,68 @@ def clean_nan_values(data):
         if isinstance(data, dict):
             cleaned = {}
             for key, value in data.items():
-                if isinstance(value, float):
-                    # Handle NaN and infinity values safely
-                    try:
-                        if math.isnan(value) or math.isinf(value):
-                            cleaned[key] = None
-                        else:
-                            cleaned[key] = value
-                    except (ValueError, TypeError):
-                        # If math.isnan fails, convert to None
-                        cleaned[key] = None
-                elif isinstance(value, str):
+                if isinstance(value, str):
                     # Handle string representations of NaN, infinity, and empty values
-                    if (value.lower() in ['nan', 'none', 'null', 'infinity', 'inf', '-inf'] or
-                        value.strip() == '' or value == 'None'):
+                    if (value.lower() in ['nan', 'none', 'null', 'infinity', 'inf', '-inf', 'undefined'] or
+                        value.strip() == '' or value == 'None' or value == 'NaN'):
+                        logger.info(f"Converting invalid string to None: {value[:50]}")
                         cleaned[key] = None
                     else:
-                        cleaned[key] = value
-                elif isinstance(value, (dict, list)):
-                    cleaned[key] = clean_nan_values(value)
+                        # Clean potentially problematic characters in strings
+                        try:
+                            # Remove or replace problematic Unicode characters
+                            cleaned_value = value.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                            # Ensure the string can be properly encoded in JSON
+                            cleaned_value.encode('utf-8')
+                            cleaned[key] = cleaned_value
+                        except (UnicodeEncodeError, UnicodeDecodeError) as e:
+                            logger.warning(f"Cleaning problematic characters in string field '{key}': {value[:50]}... Error: {str(e)}")
+                            # Replace problematic characters with safe alternatives
+                            cleaned_value = value.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                            cleaned[key] = cleaned_value
                 else:
-                    cleaned[key] = value
+                    cleaned[key] = clean_nan_values(value)
             return cleaned
         elif isinstance(data, list):
             return [clean_nan_values(item) for item in data]
         else:
-            # Handle scalar NaN values
+            # Handle scalar values
             if isinstance(data, float):
+                # Handle NaN and infinity values safely
                 try:
                     if math.isnan(data) or math.isinf(data):
+                        logger.info(f"Converting NaN/inf value to None: {data}")
                         return None
                     else:
                         return data
-                except (ValueError, TypeError):
+                except (ValueError, TypeError, OverflowError):
+                    logger.info(f"Converting problematic float to None: {data}")
                     return None
             elif isinstance(data, str):
-                if (data.lower() in ['nan', 'none', 'null', 'infinity', 'inf', '-inf'] or
-                    data.strip() == '' or data == 'None'):
+                # Handle string representations of NaN, infinity, and empty values
+                if (data.lower() in ['nan', 'none', 'null', 'infinity', 'inf', '-inf', 'undefined'] or
+                    data.strip() == '' or data == 'None' or data == 'NaN'):
+                    logger.info(f"Converting invalid string to None: {data[:50]}")
                     return None
                 else:
-                    return data
-            return data
+                    # Clean potentially problematic characters in strings
+                    try:
+                        # Remove or replace problematic Unicode characters
+                        cleaned_value = data.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                        # Ensure the string can be properly encoded in JSON
+                        cleaned_value.encode('utf-8')
+                        return cleaned_value
+                    except (UnicodeEncodeError, UnicodeDecodeError) as e:
+                        logger.warning(f"Cleaning problematic characters in string: {data[:50]}... Error: {str(e)}")
+                        # Replace problematic characters with safe alternatives
+                        cleaned_value = data.replace('\u00a0', ' ').replace('\u00b2', ' sqm').replace('\u2013', '-').replace('\u2019', "'").replace('\u2022', '-')
+                        return cleaned_value
+            else:
+                return data
     except Exception as e:
-        logger.error(f"Error in clean_nan_values: {str(e)}")
-        # If cleaning fails, return the data as-is
-        return data
+        logger.error(f"Error in clean_nan_values: {str(e)} with data: {str(data)[:200]}")
+        # If cleaning fails, return None for safety
+        return None
 
 # Microburbs API configuration
 MICROBURBS_API_URL = "https://www.microburbs.com.au/report_generator/api/suburb/properties"
@@ -126,10 +170,28 @@ def get_properties():
                 logger.info(f"Cleaned data size: {len(str(cleaned_data))} characters")
 
                 # Ensure the response is valid JSON
-                json_str = json.dumps(cleaned_data)
-                logger.info(f"Final JSON size: {len(json_str)} characters")
+                try:
+                    json_str = json.dumps(cleaned_data, ensure_ascii=False)
+                    logger.info(f"JSON validation successful: {len(json_str)} characters")
+                    return jsonify(cleaned_data)
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON validation failed: {str(e)}")
+                    logger.error(f"Cleaned data preview: {str(cleaned_data)[:500]}")
 
-                return jsonify(cleaned_data)
+                    # Try to identify the problematic field
+                    try:
+                        problematic_field = find_problematic_field(cleaned_data)
+                        logger.error(f"Problematic field: {problematic_field}")
+                    except:
+                        logger.error("Could not identify problematic field")
+
+                    # Return error response with debugging info
+                    return jsonify({
+                        'error': f'Invalid JSON after cleaning: {str(e)}',
+                        'data_size': len(str(cleaned_data)),
+                        'data_preview': str(cleaned_data)[:1000] if str(cleaned_data) else 'No data',
+                        'original_response_size': len(response.text)
+                    }), 500
             except json.JSONDecodeError as e:
                 logger.error(f"Original response is not valid JSON: {str(e)}")
                 logger.error(f"Response status: {response.status_code}")
@@ -185,15 +247,55 @@ def test_properties_endpoint():
     mock_data = {
         "results": [
             {
-                "area_name": "Test Property, Belmont North, NSW",
+                "area_name": "Test Property 1, Belmont North, NSW",
                 "price": 1250000.0,
                 "property_type": "House",
                 "attributes": {
                     "bedrooms": 4.0,
                     "bathrooms": 2.0,
                     "garage_spaces": 2.0,
-                    "land_size": "973 m²"
-                }
+                    "land_size": "973 m²",
+                    "description": "Beautiful family home in a quiet neighborhood. Perfect for growing families with spacious living areas and modern amenities."
+                },
+                "coordinates": {
+                    "latitude": -33.01183148,
+                    "longitude": 151.67286749
+                },
+                "listing_date": "2025-10-07"
+            },
+            {
+                "area_name": "Test Property 2, Belmont North, NSW",
+                "price": 890000.0,
+                "property_type": "House",
+                "attributes": {
+                    "bedrooms": 3.0,
+                    "bathrooms": 1.0,
+                    "garage_spaces": 2.0,
+                    "land_size": "556 m²",
+                    "description": "Charming cottage with character and potential. Great opportunity for first home buyers or investors."
+                },
+                "coordinates": {
+                    "latitude": -33.01649474,
+                    "longitude": 151.67157968
+                },
+                "listing_date": "2025-10-08"
+            },
+            {
+                "area_name": "Test Property 3, Belmont North, NSW",
+                "price": 1350000.0,
+                "property_type": "House",
+                "attributes": {
+                    "bedrooms": 5.0,
+                    "bathrooms": 3.0,
+                    "garage_spaces": 2.0,
+                    "land_size": "605 m²",
+                    "description": "Spacious family home with multiple living zones and modern finishes. Perfect for entertaining."
+                },
+                "coordinates": {
+                    "latitude": -33.01204354,
+                    "longitude": 151.66851581
+                },
+                "listing_date": "2025-10-08"
             }
         ]
     }

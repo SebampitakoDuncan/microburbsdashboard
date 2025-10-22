@@ -129,6 +129,7 @@ This project is optimized for Vercel deployment:
 - `/health` - Health check
 - `/test` - Basic Flask test
 - `/api/properties-test` - Mock property data (no external API calls)
+- **Automatic fallback** - If main API fails, dashboard uses mock data
 
 ### Local Development
 For data analysis and Jupyter notebook work, install the analysis requirements:
