@@ -121,15 +121,13 @@ This project is optimized for Vercel deployment:
 ### Troubleshooting Vercel Deployment
 
 **If you get JSON parsing errors:**
-1. Test the simple endpoint: `/api/properties-test` (returns mock data)
-2. Check Vercel function logs for detailed error messages
-3. Ensure the `clean_nan_values` function isn't causing issues
+1. Check Vercel function logs for detailed error messages and response data
+2. The enhanced `clean_nan_values` function handles problematic characters
+3. All data comes directly from the Microburbs API
 
 **Test Endpoints:**
 - `/health` - Health check
 - `/test` - Basic Flask test
-- `/api/properties-test` - Mock property data (no external API calls)
-- **Automatic fallback** - If main API fails, dashboard uses mock data
 
 ### Local Development
 For data analysis and Jupyter notebook work, install the analysis requirements:

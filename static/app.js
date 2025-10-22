@@ -123,25 +123,6 @@ class PropertyDashboard {
 
         } catch (error) {
             console.error('Error fetching properties:', error);
-
-            // Try fallback to test endpoint if main API fails
-            if (suburb === 'Belmont North') {
-                console.log('Trying fallback test endpoint...');
-                try {
-                    const fallbackResponse = await fetch('/api/properties-test');
-                    if (fallbackResponse.ok) {
-                        const fallbackData = await fallbackResponse.json();
-                        this.properties = fallbackData.results || [];
-                        console.log(`Fallback loaded ${this.properties.length} test properties`);
-                        this.processData();
-                        this.renderDashboard();
-                        return;
-                    }
-                } catch (fallbackError) {
-                    console.error('Fallback also failed:', fallbackError);
-                }
-            }
-
             this.showError(`Failed to load properties: ${error.message}`);
         } finally {
             this.showLoading(false);

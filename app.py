@@ -241,66 +241,6 @@ def test_endpoint():
     """Simple test endpoint"""
     return jsonify({'test': 'success', 'message': 'Flask server is working'})
 
-@app.route('/api/properties-test')
-def test_properties_endpoint():
-    """Test endpoint that returns mock data without external API calls"""
-    mock_data = {
-        "results": [
-            {
-                "area_name": "Test Property 1, Belmont North, NSW",
-                "price": 1250000.0,
-                "property_type": "House",
-                "attributes": {
-                    "bedrooms": 4.0,
-                    "bathrooms": 2.0,
-                    "garage_spaces": 2.0,
-                    "land_size": "973 m²",
-                    "description": "Beautiful family home in a quiet neighborhood. Perfect for growing families with spacious living areas and modern amenities."
-                },
-                "coordinates": {
-                    "latitude": -33.01183148,
-                    "longitude": 151.67286749
-                },
-                "listing_date": "2025-10-07"
-            },
-            {
-                "area_name": "Test Property 2, Belmont North, NSW",
-                "price": 890000.0,
-                "property_type": "House",
-                "attributes": {
-                    "bedrooms": 3.0,
-                    "bathrooms": 1.0,
-                    "garage_spaces": 2.0,
-                    "land_size": "556 m²",
-                    "description": "Charming cottage with character and potential. Great opportunity for first home buyers or investors."
-                },
-                "coordinates": {
-                    "latitude": -33.01649474,
-                    "longitude": 151.67157968
-                },
-                "listing_date": "2025-10-08"
-            },
-            {
-                "area_name": "Test Property 3, Belmont North, NSW",
-                "price": 1350000.0,
-                "property_type": "House",
-                "attributes": {
-                    "bedrooms": 5.0,
-                    "bathrooms": 3.0,
-                    "garage_spaces": 2.0,
-                    "land_size": "605 m²",
-                    "description": "Spacious family home with multiple living zones and modern finishes. Perfect for entertaining."
-                },
-                "coordinates": {
-                    "latitude": -33.01204354,
-                    "longitude": 151.66851581
-                },
-                "listing_date": "2025-10-08"
-            }
-        ]
-    }
-    return jsonify(mock_data)
-
 if __name__ == '__main__':
     print("Starting Property Dashboard Server...")
     print("Dashboard will be available at: http://localhost:5001")
